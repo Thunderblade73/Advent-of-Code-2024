@@ -43,24 +43,39 @@ fun day9() {
 
     val (files, empties) = inArray.withIndex().partition { (i, _) -> i % 2 == 0 }
 
-    val mutEmpties = empties.toMutableList()
-
+    val mutEmpties = empties.toMutableList().toSortedSet{a,b -> a.index.compareTo(b.index)}
 
     val result = files.reversed().associateWith { a ->
         mutEmpties.firstOrNull { it.value >= a.value && it.index <= a.index }?.also {
             if (a.value == it.value) mutEmpties.remove(it) else {
-                mutEmpties[mutEmpties.indexOf(it)] = IndexedValue(it.index, (it.value - a.value))
+                mutEmpties.remove(it)
+                mutEmpties.add(IndexedValue(it.index, (it.value - a.value)))
             }
+            mutEmpties.add(a)
         }
-    }.toSortedMap{a,b -> a.index.compareTo(b.index)}
+    }.toSortedMap { a, b -> a.index.compareTo(b.index) }
 
-    result.toList().sortedBy {a,b->
-
+    val emptiesMap = mutEmpties.filter { it.value != 0 }.map{ (index, times) ->
+        Quad(index,0,times,0)
     }
 
-    val mutFile = buildList<Int> {
+    val mapped = (result.map { (a, b) ->
+        if (b == null) {
+            Quad(a.index, a.index, a.value, 0)
+        } else {
+            Quad(b.index, a.index, a.value, b.value)
+        }
+    } + emptiesMap).sortedBy { -it.fourth }.sortedBy { it.first }
 
-    }
+    val grouped = mapped.groupBy { it.first }.map {
+            val last = it.value.last()
+            //val trail = if(last.fourth == 0) emptyList<Int>() else (0..<(last.fourth - last.third)).map { 0 }
+            it.value.map { (_, index, times, _) -> (0..<times).map { index/2 } }.flatten()//+ trail
+        }
 
+    val out2 = grouped.flatten()
 
+    val sum2 = out2.withIndex().sumOf { (i, it) -> (i * it).toLong() }
+
+    println(sum2)
 }

@@ -48,13 +48,20 @@ private fun List<String>.countXthmas(lineIndex: Int, charIndex: Int): Int {
     }
 }
 
-private class Quad<T>(val a: T,val b: T,val c: T,val d: T) {
-    override fun hashCode(): Int = a.hashCode() + 31*b.hashCode() + 31*31*c.hashCode()+31*31*31*d.hashCode()
+class Quad<T>(val first: T, val second: T, val third: T, val fourth: T) {
+    override fun hashCode(): Int = first.hashCode() + 31*second.hashCode() + 31*31*third.hashCode()+31*31*31*fourth.hashCode()
 
     override fun equals(other: Any?): Boolean {
         if(other !is Quad<*>) return false
-        return a == other.a && b == other.b && c == other.c && d == other.d
+        return first == other.first && second == other.second && third == other.third && fourth == other.fourth
     }
+
+    override fun toString(): String = "Quad($first,$second,$third,$fourth)"
+
+    operator fun component1() = first
+    operator fun component2() = second
+    operator fun component3() = third
+    operator fun component4() = fourth
 }
 
 private fun List<String>.countXmas(lineIndex: Int, charIndex: Int): Int {

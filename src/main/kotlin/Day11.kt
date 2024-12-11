@@ -1,19 +1,12 @@
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.util.*
-import java.util.concurrent.ConcurrentLinkedDeque
-import kotlin.coroutines.*
-import kotlin.time.Duration.Companion.seconds
 
-suspend fun day11(){
+suspend fun day11() {
     val file = File("src/main/resources/Day11Input.txt")
 
     val inState = file.readText().split(" ").map { it.toLong() }
 
     var firstRun = inState
-    for( x in 0..24){
+    for (x in 0..24) {
         firstRun = firstRun.permuteList()
     }
 
@@ -53,26 +46,48 @@ suspend fun day11(){
 
     //println(inState.map { it.permute(0,75) }.flatten().size)
 
-    1L.permute(0,5)
+    //val end = 1L.permute(0, 5)
+
+    println(inState.map { it.permute(0,75) }.sumOf { it.size })
 }
 
-private val memo = mutableMapOf<Long,Map<Int,List<Long>>>()
+private val memo = mutableMapOf<Long, MutableMap<Int, List<Long>>>()
 
-fun Long.calculatePermute() : List<Long>{
-    if(this == 0L) return listOf(1L)
-    if(this.toString().length % 2 == 0) return this.split()
+fun Long.calculatePermute(): List<Long> {
+    if (this == 0L) return listOf(1L)
+    if (this.toString().length % 2 == 0) return this.split()
 
     return listOf(this * 2024L)
 }
 
 
-fun Long.permute(iteration : Int,target: Int) : List<Long>{
-    var memoVal = memo[this] ?: emptyMap()
-    val skip = memoVal[target-iteration-1]
-    if(skip != null) return skip
-
-
-
+fun Long.permute(iteration: Int, target: Int): List<Long> {
+    if (iteration == target) return listOf(this) // TODO prove that is correct
+    val memoVal = memo[this] ?: emptyMap()
+    val skip = memoVal[target - iteration - 1]
+    if (skip != null) return skip
+    val comp = memoVal[0] ?: this.calculatePermute().also {
+        memo.merge(this, mapOf(0 to it).toMutableMap()) { a, b ->
+            a.putAll(b)
+            a
+        }
+        println(this)
+    }
+    if (comp.size == 1) {
+        return comp[0].permute(iteration, target-1)
+    }
+    memo.merge(this, mapOf(0 to comp).toMutableMap()) { a, b ->
+        a.putAll(b)
+        a
+    }
+    for (x in (iteration + 1)..<target) {
+        val end = comp.map { it.permute(0, x) }.flatten()
+        memo.merge(this, mapOf(x to end).toMutableMap()) { a, b ->
+            a.putAll(b)
+            a
+        }
+    }
+    return memo[this]!![target - iteration - 1]!!
 
     /*
     1
@@ -88,13 +103,13 @@ fun Long.permute(iteration : Int,target: Int) : List<Long>{
 
 }
 
-fun List<Long>.permuteList() = buildList<Long>{
-    val (zero,zeroRemain) = this@permuteList.partition { it == 0L }
+fun List<Long>.permuteList() = buildList<Long> {
+    val (zero, zeroRemain) = this@permuteList.partition { it == 0L }
 
     // Zero Rule
     addAll(zero.map { 1L })
 
-    val (even,odd) = zeroRemain.partition { it.toString().length % 2 == 0 }
+    val (even, odd) = zeroRemain.partition { it.toString().length % 2 == 0 }
 
     // Even Split
     addAll(even.map { it.split() }.flatten())
@@ -103,12 +118,12 @@ fun List<Long>.permuteList() = buildList<Long>{
     addAll(odd.map { it * 2024L })
 }
 
-fun Long.split() : List<Long>{
+fun Long.split(): List<Long> {
     val asString = toString()
 
-    val one = asString.substring(0,asString.length/2).toLong()
+    val one = asString.substring(0, asString.length / 2).toLong()
 
-    val two = asString.substring(asString.length/2).toLong()
+    val two = asString.substring(asString.length / 2).toLong()
 
-    return listOf(one,two)
+    return listOf(one, two)
 }

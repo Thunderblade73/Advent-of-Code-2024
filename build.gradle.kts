@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm") version "1.9.23"
     application
@@ -10,8 +12,15 @@ repositories {
     mavenCentral()
 }
 
+val shadowImpl: Configuration by configurations.creating {
+    configurations.implementation.get().extendsFrom(this)
+}
+
 dependencies {
     testImplementation(kotlin("test"))
+    shadowImpl("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
 }
 
 tasks.test {

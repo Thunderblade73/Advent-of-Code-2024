@@ -60,36 +60,27 @@ suspend fun day11(){
 
 
 
-fun List<Long>.permute() : List<Long>{
-
-    val outList = mutableListOf<Pair<Int,Long>>()
-
-    val (zero,zeroRemain) = withIndex().map { Pair(it.index*2,it.value) }.partition { it.second == 0L }
+fun List<Long>.permute() = buildList<Long>{
+    val (zero,zeroRemain) = partition { it == 0L }
 
     // Zero Rule
-    outList.addAll(zero.map { Pair(it.first * 2,1) })
+    addAll(zero.map { 1L })
 
-    val (even,odd) = zeroRemain.partition { it.second.toString().length % 2 == 0 }
+    val (even,odd) = zeroRemain.partition { it.toString().length % 2 == 0 }
 
     // Even Split
-    outList.addAll(even.map { it.split() }.flatten())
+    addAll(even.map { it.split() }.flatten())
 
     // Multiply 2024
-    outList.addAll(odd.map { Pair(it.first,it.second * 2024L) })
-
-    outList.sortWith { a,b ->
-        a.first.compareTo(b.first)
-    }
-
-    return outList.map { it.second }
+    addAll(odd.map { it * 2024L })
 }
 
-fun Pair<Int,Long>.split() : List<Pair<Int,Long>>{
-    val asString = second.toString()
+fun Long.split() : List<Long>{
+    val asString = toString()
 
     val one = asString.substring(0,asString.length/2).toLong()
 
     val two = asString.substring(asString.length/2).toLong()
 
-    return listOf(Pair(first,one),Pair(first + 1,two))
+    return listOf(one,two)
 }

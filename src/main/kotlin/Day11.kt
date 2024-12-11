@@ -1,10 +1,6 @@
 import java.io.File
 
-suspend fun day11() {
-    val file = File("src/main/resources/Day11Input.txt")
-
-    val inState = file.readText().split(" ").map { it.toLong() }
-
+private fun problem1(inState: List<Long>){
     var firstRun = inState
     for (x in 0..24) {
         firstRun = firstRun.permuteList()
@@ -12,6 +8,13 @@ suspend fun day11() {
 
     println(firstRun.size)
     println()
+}
+
+
+suspend fun day11() {
+    val file = File("src/main/resources/Day11Input.txt")
+
+    val inState = file.readText().split(" ").map { it.toLong() }
 
 //    val workStack = ConcurrentLinkedDeque<Triple<Int,Int,List<Long>>>()
 //    val resultStack = mutableListOf<Triple<Int,Int,List<Long>>>()
@@ -48,7 +51,7 @@ suspend fun day11() {
 
     //val end = 1L.permute(0, 5)
 
-    println(inState.map { it.permute(0,75) }.sumOf { it.size })
+    println(inState.sumOf { it.permute(75) })
 }
 
 private val memo = mutableMapOf<Long, MutableMap<Int, List<Long>>>()
@@ -60,8 +63,21 @@ fun Long.calculatePermute(): List<Long> {
     return listOf(this * 2024L)
 }
 
+private val cache = (1..75).associateWith { mutableMapOf<Long,Long>() }
 
-fun Long.permute(iteration: Int, target: Int): List<Long> {
+fun Long.permute(iteration : Int) : Long = if(iteration==0) 1 else{
+    val itCache = cache[iteration]!!
+    itCache.getOrPut(this){
+        when{
+            this == 0L -> 1L.permute(iteration-1)
+            this.toString().length % 2 == 0 -> this.split().sumOf { it.permute(iteration-1) }
+            else -> (this * 2024L).permute(iteration-1)
+        }
+    }
+}
+
+
+fun Long.permuteOld(iteration: Int, target: Int): List<Long> {
     if (iteration == target) return listOf(this) // TODO prove that is correct
     val memoVal = memo[this] ?: emptyMap()
     val skip = memoVal[target - iteration - 1]
@@ -74,14 +90,14 @@ fun Long.permute(iteration: Int, target: Int): List<Long> {
         println(this)
     }
     if (comp.size == 1) {
-        return comp[0].permute(iteration, target-1)
+        return comp[0].permuteOld(iteration, target-1)
     }
     memo.merge(this, mapOf(0 to comp).toMutableMap()) { a, b ->
         a.putAll(b)
         a
     }
     for (x in (iteration + 1)..<target) {
-        val end = comp.map { it.permute(0, x) }.flatten()
+        val end = comp.map { it.permuteOld(0, x) }.flatten()
         memo.merge(this, mapOf(x to end).toMutableMap()) { a, b ->
             a.putAll(b)
             a

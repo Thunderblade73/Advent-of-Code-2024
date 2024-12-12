@@ -1,36 +1,53 @@
 import java.io.File
 
+private var input : List<String> = emptyList()
+
+fun Pair<Int,Int>.getValue() : Char? = input.getOrNull(second)?.getOrNull(first)
+
 fun day12(){
-    val file = File("src/main/resources/Day12TestInput.txt")
+    val file = File("src/main/resources/Day12Input.txt")
 
-    val input = file.readLines()
+    input = file.readLines()
 
-    val fields = mutableListOf<MutableList<Field>>()
+    val fields = mutableMapOf<Pair<Int,Int>,Field>()
     
     val clusters = mutableListOf<MutableList<Field>>()
 
     fun Field.addNewField() {
         val cluster = clusters[clusterIndex]
         cluster.add(this)
-        val fieldRow = fields.getOrNull(pos.second) ?: mutableListOf<Field>().also { fields.add(it) }
-        fieldRow.add(this)
+        fields[this.pos] = this
     }
 
-    fun Field.addToCluster(
+    fun addToCluster(
         pos: Pair<Int, Int>,
-        c : Char
-    ) {
-        Field(pos, clusterIndex,c).addNewField()
+        c : Char,
+        clusterIndex: Int
+    ) : Field {
+        val field = Field(pos, clusterIndex,c)
+        field.addNewField()
+        return field
+    }
+
+    fun Pair<Int,Int>.groupFields(c : Char,collect : MutableSet<Pair<Int,Int>>){
+        collect.add(this@groupFields)
+        this@groupFields.addX(-1).takeIf { !collect.contains(it) }?.getValue()?.takeIf { it == c }?.let { this@groupFields.addX(-1).groupFields(c, collect) }
+        this@groupFields.addY(-1).takeIf { !collect.contains(it) }?.getValue()?.takeIf { it == c }?.let { this@groupFields.addY(-1).groupFields(c,collect) }
+        this@groupFields.addX(1).takeIf { !collect.contains(it) }?.getValue()?.takeIf { it == c }?.let { this@groupFields.addX(1).groupFields(c,collect) }
+        this@groupFields.addY(1).takeIf { !collect.contains(it) }?.getValue()?.takeIf { it == c }?.let { this@groupFields.addY(1).groupFields(c,collect) }
     }
 
     fun Pair<Int, Int>.checkField(c : Char) {
-        fields.getOrNull(second - 1)?.getOrNull(first)?.let { if(it.value == c) it else null }?.addToCluster(this,c)?.also { return }
-        input.getOrNull(second - 1)?.getOrNull(first)?.let { if(it == c) it else null }?.addToCluster(this,c)?.also { return }
-        fields.getOrNull(second)?.getOrNull(first - 1)?.let { if(it.value == c) it else null }?.addToCluster(this,c)?.also { return }
-        input.getOrNull(second)?.getOrNull(first - 1)?.let { if(it == c) it else null }?.addToCluster(this,c)?.also { return }
-        val field = Field(this,clusters.size,c)
+        fields[this]?.let { return }
+        val collect = mutableSetOf<Pair<Int,Int>>()
+        this.groupFields(c,collect)
+
+        val clusterIndex = clusters.size
+
         clusters.add(mutableListOf())
-        field.addNewField()
+        collect.forEach{
+            addToCluster(it,c,clusterIndex)
+        }
     }
     
     input.forEachIndexed { y, line -> 
@@ -43,6 +60,17 @@ fun day12(){
         it.getPerimeter() * it.getArea()
     }
     println(sum1)
+
+    val sum2 = clusters.sumOf {
+        it.getCheapPerimeter() * it.getArea()
+    }
+    println(sum2)
+
+    // Sanity Checks
+    val fieldsInClusters = clusters.sumOf { it.size }
+    val noMixedClusters = clusters.all { a -> a.all { it.value == a.first().value } }
+    val clusterToValue = clusters.associateWith { it.first().value }
+    val valueGroups = clusters.groupBy { it.first().value }
 }
 
 private fun List<Field>.getArea(): Long = size.toLong()
@@ -59,6 +87,78 @@ private fun List<Field>.getPerimeter(): Long {
     return base
 }
 
+private fun List<Field>.getCheapPerimeter(): Long {
+    val infos = map { it.getSides() }.flatten()
+    val groups = infos.groupBy { it.second }.mapValues { it.value.map { it.first }.toSet() }
+    val north = groups[Side.NORTH]?.findNS() ?: 0L
+    val south = groups[Side.SOUTH]?.findNS() ?: 0L
+    val east = groups[Side.EAST]?.findEW() ?: 0L
+    val west = groups[Side.WEST]?.findEW() ?: 0L
+    return north + south + east + west
+}
+
+private fun Field.getSides() = listOfNotNull<SideInfo>(
+    pos.addX(1).getValue().let { if(value != it) pos to Side.EAST else null },
+    pos.addX(-1).getValue().let { if(value != it) pos to Side.WEST else null },
+    pos.addY(1).getValue().let { if(value != it) pos to Side.SOUTH else null },
+    pos.addY(-1).getValue().let { if(value != it) pos to Side.NORTH else null },
+)
+
+
+private typealias SideInfo = Pair<Pair<Int,Int>,Side>
+
+private enum class Side{
+    NORTH,
+    EAST,
+    SOUTH,
+    WEST
+}
+
+private fun Set<Pair<Int,Int>>.findEW() : Long{
+    val reduceSet = this.toMutableSet()
+    var sum = 0L
+    while(reduceSet.isNotEmpty()){
+        val inital = reduceSet.first()
+        reduceSet.remove(inital)
+
+        var plus = inital.addY(1)
+        while (reduceSet.contains(plus)){
+            reduceSet.remove(plus)
+            plus = plus.addY(1)
+        }
+
+        var minus = inital.addY(-1)
+        while (reduceSet.contains(minus)){
+            reduceSet.remove(minus)
+            minus = minus.addY(-1)
+        }
+        sum++
+    }
+    return sum
+}
+
+private fun Set<Pair<Int,Int>>.findNS(): Long{
+    val reduceSet = this.toMutableSet()
+    var sum = 0L
+    while(reduceSet.isNotEmpty()){
+        val inital = reduceSet.first()
+        reduceSet.remove(inital)
+
+        var plus = inital.addX(1)
+        while (reduceSet.contains(plus)){
+            reduceSet.remove(plus)
+            plus = plus.addX(1)
+        }
+
+        var minus = inital.addX(-1)
+        while (reduceSet.contains(minus)){
+            reduceSet.remove(minus)
+            minus = minus.addX(-1)
+        }
+        sum++
+    }
+    return sum
+}
 
 private class Field(val pos : Pair<Int,Int>,val clusterIndex : Int,val value : Char)
 

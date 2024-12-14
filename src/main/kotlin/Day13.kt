@@ -10,9 +10,9 @@ fun day13() {
     val input = regex.findAll(file.readText()).map {
         with(it) {
             Triple(
-                (getGroupInt("ax") to getGroupInt("ay")) as Vec,
-                (getGroupInt("bx") to getGroupInt("by")) as Vec,
-                (getGroupInt("px") to getGroupInt("py")) as Vec
+                (getGroupLong("ax") to getGroupLong("ay")) as VecL,
+                (getGroupLong("bx") to getGroupLong("by")) as VecL,
+                (getGroupLong("px") to getGroupLong("py")) as VecL
             )
         }
     }.toList()
@@ -26,13 +26,13 @@ fun day13() {
     println(costs2.filterNotNull().sum())
 }
 
-private fun MatchResult.getGroupInt(name: String) = groups[name]!!.value.toLong()
+fun MatchResult.getGroupLong(name: String) = groups[name]!!.value.toLong()
 
-private typealias Vec = Pair<Long, Long>
+typealias VecL = Pair<Long, Long>
 
-private operator fun Vec.plus(other: Long) = first + other to second + other
+operator fun VecL.plus(other: Long) = first + other to second + other
 
-private fun getPoint(a: Vec, b: Vec, p: Vec,cap : Boolean): Long? {
+private fun getPoint(a: VecL, b: VecL, p: VecL, cap : Boolean): Long? {
     try {
         val (q, r1) = (p.second * a.first - a.second * p.first).divWithR(b.second * a.first - a.second * b.first)
         if (r1 != 0L) return null

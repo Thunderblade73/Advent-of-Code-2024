@@ -107,11 +107,11 @@ private fun Field.getSides() = listOfNotNull<SideInfo>(
 
 private typealias SideInfo = Pair<Pair<Int,Int>,Side>
 
-private enum class Side{
-    NORTH,
-    EAST,
-    SOUTH,
-    WEST
+enum class Side(val vec : VecI){
+    NORTH(0 to -1),
+    EAST(1 to 0),
+    SOUTH(0 to 1),
+    WEST(-1 to 0)
 }
 
 private fun Set<Pair<Int,Int>>.findEW() : Long{

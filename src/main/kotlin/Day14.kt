@@ -90,7 +90,7 @@ private fun VecI.makePositive(size : VecI) : VecI{
     }else second
     return VecI(nFirst,nSecond)
 }
-private operator fun VecI.times(t: Int): VecI = VecI(first * t, second * t)
+operator fun VecI.times(t: Int): VecI = VecI(first * t, second * t)
 private operator fun VecI.rem(m: VecI): VecI = VecI(first % m.first, second % m.second)
 
 typealias VecI = Pair<Int, Int>

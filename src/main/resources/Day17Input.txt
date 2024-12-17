@@ -1,0 +1,52 @@
+Register A: 59397658
+Register B: 0
+Register C: 0
+
+Program: 2,4,1,1,7,5,4,6,1,4,0,3,5,5,3,0
+
+
+B = A % 8
+B = 1 xor B
+C = A / 2^B
+B = B xor C
+B = 4 xor B
+A = A / 2^3
+out(B % 8)
+jump 0 if A != 0
+
+B = 4 xor (A / 2^(1 xor A % 8)) xor 1 xor (A % 8)
+= 5 xor (A / 2^(1 xor A % 8)) xor (A % 8)
+
+x = 5 xor (A / 2^(1 xor A % 8)) xor (A % 8)
+x xor 5 = (A / 2^(1 xor A % 8)) xor (A % 8)
+
+A % 8 = 0 -> A/2 -> 4|0
+A % 8 = 1 -> A xor 1 -> 0
+A % 8 = 2 -> A/8 xor 2
+A % 8 = 3 -> A/4 xor 3 -> 0|2|4|6
+A % 8 = 4 -> A/32 xor 4
+A % 8 = 5 -> A/16 xor 5
+A % 8 = 6 -> A/128 xor 6
+A % 8 = 7 -> A/64 xor 7
+
+2->1, 4->2, 8->3, 16->4, 32->5, 64->6, 128->7
+
+0 xor 5 = 5
+1 xor 5 = 4
+2 xor 5 = 7
+3 xor 5 = 6
+4 xor 5 = 1
+5 xor 5 = 0
+6 xor 5 = 3
+7 xor 5 = 2
+
+A = 101 110 (001|000)
+
+    0   3   5
+
+2,4,1,1,7,5,4,6,1,4,0,3,5,5,3,0
+
+
+A_n+1 = A_n / 8
+
+min für A: 2^(3*16)=2^48

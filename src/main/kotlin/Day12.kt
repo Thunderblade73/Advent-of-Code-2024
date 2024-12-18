@@ -161,6 +161,3 @@ private fun Set<Pair<Int,Int>>.findNS(): Long{
 }
 
 private class Field(val pos : Pair<Int,Int>,val clusterIndex : Int,val value : Char)
-
-private infix fun Pair<Int,Int>.addX(x : Int) = (first + x) to second
-private infix fun Pair<Int,Int>.addY(y : Int) = first to (second + y)

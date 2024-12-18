@@ -141,7 +141,7 @@ fun day16() {
     println(positionCounter)
 }
 
-private fun Node.distanceTo(goals: List<Node>): Int {
+fun Node.distanceTo(goals: List<Node>): Int {
     val distances = mutableMapOf<Node, Int>()
     val previous = mutableMapOf<Node, Node>()
     val visited = mutableSetOf<Node>()
@@ -173,7 +173,7 @@ private fun Node.distanceTo(goals: List<Node>): Int {
     return distances[lastVisitedNode]!!
 }
 
-private fun Node.allDistances(): Map<Node, Int> {
+fun Node.allDistances(): Map<Node, Int> {
     val distances = mutableMapOf<Node, Int>()
     val previous = mutableMapOf<Node, Node>()
     val visited = mutableSetOf<Node>()
@@ -214,9 +214,9 @@ val Side.anti
         Side.WEST -> Side.EAST
     }
 
-private fun VecI.inBounds(xMax: Int, yMax: Int): Boolean = first >= 0 && second >= 0 && first <= xMax && second <= yMax
+fun VecI.inBounds(xMax: Int, yMax: Int): Boolean = first >= 0 && second >= 0 && first <= xMax && second <= yMax
 
-private class Node(val name: String) {
+class Node(val name: String) {
     val neighbours = mutableMapOf<Node, Int>()
 
     override fun toString() = name

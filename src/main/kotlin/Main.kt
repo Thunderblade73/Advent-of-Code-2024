@@ -1,5 +1,5 @@
 
 
 suspend fun main(args: Array<String>) {
-    day17()
+    day18()
 }

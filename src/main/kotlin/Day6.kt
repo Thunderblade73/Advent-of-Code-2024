@@ -61,8 +61,8 @@ fun day6(){
 
 private fun List<String>.getField(pos : Pair<Int,Int>) = getOrNull(pos.first)?.getOrNull(pos.second)
 
-private infix fun Pair<Int,Int>.addX(x : Int) = (first + x) to second
-private infix fun Pair<Int,Int>.addY(y : Int) = first to (second + y)
+infix fun Pair<Int,Int>.addX(x : Int) = (first + x) to second
+infix fun Pair<Int,Int>.addY(y : Int) = first to (second + y)
 
 private enum class Direction {
     UP,
